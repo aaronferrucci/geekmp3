@@ -34,7 +34,9 @@ for my $mp3 (@mp3s) {
 
   my $submitter = "";
   my $track = "";
+  my $prefix = "";
   if ($mp3 =~ /(\S+)(\d{2})\.mp3/) {
+    $prefix = "$submitter$track - ";
     $submitter = $1;
     $track = 0 + $2;
     $tags->{$mp3}->{submitter} = $submitter;
@@ -46,7 +48,7 @@ for my $mp3 (@mp3s) {
   my $filepath = "$dir/$mp3";
   my @rawtags = `id3v2 -l $filepath`;
   my $toal = "";
-  # id3v2 tags?
+  my $tit2 = "";
   for my $line (@rawtags) {
     chomp $line;
     if ($line =~ /TALB\s*[^:]+:\s*(.*?)\s*$/) {
@@ -55,6 +57,13 @@ for my $mp3 (@mp3s) {
     # prefer the v2 tag above.
     if ($toal eq "" and $line =~ /Album\s*:\s*(\S.*\S)\s*Year/) {
       $toal = $1;
+    }
+
+    if ($line =~ /TIT2\s*[^:]+:\s*(.*?)\s*$/) {
+      $tit2 = $1;
+    }
+    if ($tit2 eq "" and $line =~ /Title\s*:\s*(\S.*\S)\s*Artist/) {
+      $tit2 = $1;
     }
   }
 
@@ -71,6 +80,10 @@ for my $mp3 (@mp3s) {
   $tags->{$mp3}->{TALB} = $twentyfour;
   # album n/m
   $tags->{$mp3}->{TPOS} = "$submitter_indices->{$submitter}/@{[scalar @submitters]}";
+  # title
+  if ($prefix ne "" and $tit2 ne "") {
+    $tags->{$mp3}->{TIT2} = "$prefix$tit2";
+  }
 } 
 
 # Set the track tag:
@@ -82,7 +95,7 @@ for my $mp3 (sort keys %$tags) {
   $tags->{$mp3}->{TRCK} = "$track/$max_track";
 }
 
-my @tagnames = sort qw(TOFN TOAL TALB TPOS TRCK);
+my @tagnames = sort qw(TIT2 TOFN TOAL TALB TPOS TRCK);
 for my $mp3 (sort keys %$tags) {
   my $cmd = "id3v2 ";
 
