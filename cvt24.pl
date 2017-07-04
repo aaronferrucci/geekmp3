@@ -36,7 +36,7 @@ for my $mp3 (@mp3s) {
   my $track = "";
   my $prefix = "";
   if ($mp3 =~ /(\S+)(\d{2})\.mp3/) {
-    $prefix = "$submitter$track - ";
+    $prefix = "$1$2 - ";
     $submitter = $1;
     $track = 0 + $2;
     $tags->{$mp3}->{submitter} = $submitter;
@@ -51,15 +51,16 @@ for my $mp3 (@mp3s) {
   my $tit2 = "";
   for my $line (@rawtags) {
     chomp $line;
-    if ($line =~ /TALB\s*[^:]+:\s*(.*?)\s*$/) {
+    # TAL and TALB
+    if ($line =~ /TALB?\s*[^:]+:\s*(.*?)\s*$/) {
       $toal = $1;
     }
     # prefer the v2 tag above.
     if ($toal eq "" and $line =~ /Album\s*:\s*(\S.*\S)\s*Year/) {
       $toal = $1;
     }
-
-    if ($line =~ /TIT2\s*[^:]+:\s*(.*?)\s*$/) {
+    # TT2 and TIT2
+    if ($line =~ /TI?T2\s*[^:]+:\s*(.*?)\s*$/) {
       $tit2 = $1;
     }
     if ($tit2 eq "" and $line =~ /Title\s*:\s*(\S.*\S)\s*Artist/) {
